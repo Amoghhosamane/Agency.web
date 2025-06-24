@@ -312,11 +312,33 @@ body.light-mode {
 }
 
 /* Services Section */
+:root {
+    --primary-black: #000000;
+    --primary-gray: #f8f8f8;
+    --white: #ffffff;
+    --dark-green: #00ff41;
+    --light-green: #39ff14;
+    --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Base body styles for dark mode */
+body {
+    background-color: var( --primary-black);
+    color: var(--white);
+}
+
+/* Light mode specific styles */
+.light-mode body {
+    background-color: #F8F8F8;
+    color: var( --primary-black);
+}
+
 .services {
     padding: 120px 50px;
     max-width: 1400px;
     margin: 0 auto;
     position: relative;
+    overflow: hidden; /* Ensures no overflow from pseudo-elements */
 }
 
 .section-title {
@@ -326,19 +348,23 @@ body.light-mode {
     margin-bottom: 80px;
     letter-spacing: -0.03em;
     position: relative;
-    overflow: hidden;
+    color: var(--white); /* Ensure title is visible */
+}
+
+.light-mode .section-title {
+    color: var( --primary-black);
 }
 
 .section-title::after {
     content: '';
     position: absolute;
-    bottom: -10px;
+    bottom: -15px; /* Slightly lower */
     left: 50%;
     transform: translateX(-50%) scaleX(0);
-    width: 100px;
-    height: 4px;
-    background: var(--dark-green);
-    transition: transform 0.8s ease-out;
+    width: 120px; /* Wider line */
+    height: 5px; /* Thicker line */
+    background: linear-gradient(90deg, transparent, var(--dark-green), transparent); /* Gradient line */
+    transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); /* Enhanced ease-out */
 }
 
 .section-title.revealed::after {
@@ -347,103 +373,122 @@ body.light-mode {
 
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly smaller min-width for flexibility */
+    gap: 50px; /* Increased gap */
     margin-top: 60px;
 }
 
 .service-card {
     padding: 50px 40px;
-    border: 1px solid #333333;
+    border: 1px solid var(--off-black); /* More subtle border initially */
     border-radius: 20px;
     transition: var(--transition);
-    background: #111111;
+    background: var(--off-black); /* Card background */
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    will-change: transform, box-shadow, border-color; /* Hint for hover animations */
+    will-change: transform, box-shadow, border-color;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Initial subtle shadow */
 }
 
+/* Inner glow effect on service card */
 .service-card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
-    transition: left 0.8s ease-out;
+    top: -2px; /* Slight overlap for smooth effect */
+    left: -102%; /* Start further left */
+    width: 104%; /* Wider to cover edges */
+    height: 104%; /* Taller to cover edges */
+    background: linear-gradient(90deg, transparent, rgba(0, 191, 99, 0.15), transparent); /* Stronger green tint */
+    transition: left 0.9s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1; /* Ensure it's above background but below content */
+    border-radius: 20px;
 }
 
 .service-card:hover::before {
-    left: 100%;
+    left: 102%; /* End further right */
 }
 
 .light-mode .service-card {
-    background: var(--white);
-    border-color: var(--primary-gray);
+    background: #FFFFFF;
+    border-color: var(--light-gray);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .service-card:hover {
-    transform: translateY(-15px) scale(1.02);
-    box-shadow: 0 25px 80px rgba(0, 255, 65, 0.15);
-    border-color: var(--dark-green);
+    transform: translateY(-18px) scale(1.03); /* More pronounced lift */
+    box-shadow: 0 30px 90px rgba(0, 191, 99, 0.25); /* Stronger green shadow */
+    border-color: var(--dark-green); /* Green border on hover */
+    z-index: 2; /* Bring hovered card to front */
 }
 
 .light-mode .service-card:hover {
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
-    border-color: var(--primary-black);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.2);
+    border-color: var( --primary-black);
 }
 
 .service-icon {
-    width: 60px;
-    height: 60px;
+    width: 65px; /* Slightly larger icon */
+    height: 65px;
     background: var(--dark-green);
-    border-radius: 15px;
+    border-radius: 50%; /* Circular icon */
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 30px;
-    color: var(--primary-black);
-    font-size: 24px;
+    margin-bottom: 35px; /* More space below icon */
+    color: var( --primary-black); /* Icon color */
+    font-size: 28px; /* Larger icon font */
     font-weight: bold;
     transition: var(--transition);
+    box-shadow: 0 5px 15px rgba(0, 191, 99, 0.4); /* Green shadow for icon */
 }
 
 .service-card:hover .service-icon {
-    transform: rotateY(360deg) scale(1.1);
+    transform: rotateY(360deg) scale(1.15); /* More pronounced icon animation */
+    box-shadow: 0 8px 25px rgba(0, 191, 99, 0.6);
 }
 
 .light-mode .service-icon {
-    background: var(--primary-black);
+    background: var( --primary-black);
     color: var(--white);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .service-card h3 {
-    font-size: 28px;
+    font-size: 30px; /* Larger heading */
     font-weight: 700;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     transition: var(--transition);
+    color: var(--white); /* Ensure heading is visible */
+}
+
+.light-mode .service-card h3 {
+    color: var( --primary-black);
 }
 
 .service-card:hover h3 {
-    color: var(--dark-green);
+    color: var(--dark-green); /* Green heading on hover */
 }
 
 .light-mode .service-card:hover h3 {
-    color: var(--primary-black);
+    color: var( --primary-black);
 }
 
 .service-card p {
-    font-size: 16px;
-    line-height: 1.6;
-    opacity: 0.8;
+    font-size: 17px; /* Slightly larger paragraph text */
+    line-height: 1.7;
+    opacity: 0.85; /* Slightly less opaque initially */
     transition: var(--transition);
+    color: var(--light-gray); /* Softer paragraph text */
+}
+
+.light-mode .service-card p {
+    color: var( --primary-black);
 }
 
 .service-card:hover p {
     opacity: 1;
-    transform: translateY(-2px);
+    transform: translateY(-3px); /* More noticeable text lift */
 }
 
 /* About Section */
@@ -586,18 +631,32 @@ body.light-mode {
 .about-image > div {
     width: 100%;
     height: 400px;
-    background: linear-gradient(135deg, #000000, #D1D0D0);
+    background: linear-gradient(135deg, #1A1A1A, #333333); /* Deep charcoal to dark grey */
     border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 24px;
-    font-weight: 700;
-    transition: var(--transition);
+    color: #E0E0E0; /* Soft white/light grey text */
+    font-size: 25px;
+    font-weight: 750;
+    transition: all 0.5s ease-in-out; /* Slower, smoother transition */
     position: relative;
     overflow: hidden;
-    will-change: transform, box-shadow; /* Hint for hover animation */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Initial subtle shadow */
+}
+
+.about-image > div:hover {
+    background: linear-gradient(135deg, #2A2A2A, #444444); /* Slightly lighter gradient on hover */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4); /* More spread out shadow */
+    /* Add a subtle pseudo-element for a "glow" effect */
+    /* Note: This requires an additional pseudo-element in HTML or a more complex CSS approach for a true inner glow.
+       For a simple CSS change, consider adding a slightly brighter text shadow on hover or a very subtle border. */
+}
+
+/* If you want an *inner* glow, you'd usually use box-shadow: inset or a pseudo-element.
+   Here's how you might approximate it for the text for this dark theme: */
+.about-image > div:hover {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.6); /* Text glows */
 }
 
 .about-image > div::before {
@@ -607,9 +666,9 @@ body.light-mode {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent 0%, rgba(0, 255, 65, 0.2) 50%, transparent 100%);
+    background: linear-gradient(45deg, transparent 0%, rgba(4, 255, 50, 0.2) 50%, transparent 100%);
     transform: translateX(-100%);
-    transition: transform 1s ease-out;
+    transition: transform 3s ease-in-out;
 }
 
 .about-image.revealed > div::before {
@@ -1451,3 +1510,12 @@ body.light-mode .service-card:hover {
     color: var(--primary-gray);
     margin-bottom: 20px; /* This ensures spacing below each paragraph */
 }
+
+.footer-section h4 {
+    color: var(--modern-green); /* Use your vibrant green for emphasis */
+    font-size: 24px; /* Example font size */
+    margin-bottom: 15px; /* Space below the heading */
+    /* Add any other desired styling, e.g., font-weight, text-align */
+    font-weight: 700;
+}
+
