@@ -1,0 +1,331 @@
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Cached DOM Elements ---
+    const body = document.body;
+    const themeToggleBtn = document.querySelector('.theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const progressBar = document.querySelector('.progress-bar');
+    const heroContent = document.querySelector('.hero-content');
+    const sectionTitles = document.querySelectorAll('.section-title'); 
+    const aboutSection = document.querySelector('.about');
+    const aboutText = document.querySelector('.about-text');
+    const aboutH2 = document.querySelector('.about-text h2');
+    const aboutImage = document.querySelector('.about-image');
+    const stats = document.querySelectorAll('.stat');
+    const footerSections = document.querySelectorAll('.footer-section');
+    const footerBottom = document.querySelector('.footer-bottom');
+
+    // New: Get the quote form and message element
+    const quoteForm = document.getElementById('quoteForm');
+    const formMessage = document.getElementById('formMessage');
+
+    // Store elements to be revealed in a mutable array, filtered as they are revealed
+    let scrollRevealElements = Array.from(document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right'));
+
+    // --- Theme Toggle Functionality ---
+    function applyTheme(isLightMode) {
+        if (isLightMode) {
+            body.classList.add('light-mode');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+            localStorage.setItem('theme', 'light');
+        } else {
+            body.classList.remove('light-mode');
+            themeIcon.classList.remove('fa-sun');
+            themeIcon.classList.add('fa-moon');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        applyTheme(!body.classList.contains('light-mode'));
+    });
+
+    // Apply saved theme or default to dark
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        applyTheme(true);
+    } else {
+        applyTheme(false);
+    }
+
+    // --- Progress Bar (Scroll Indicator) ---
+    function updateProgressBar() {
+        const {
+            scrollTop,
+            scrollHeight,
+            clientHeight
+        } = document.documentElement;
+        const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
+        progressBar.style.width = scrollPercent + '%';
+    }
+
+    window.addEventListener('scroll', updateProgressBar);
+    updateProgressBar(); // Initial call to set progress bar position
+
+    // --- Hero Parallax Effect (Removed mousemove, simplified to CSS animation) ---
+    // The parallax effect for hero content is now handled by CSS animations
+    // and the `will-change` property on `.hero-content` for performance hints.
+
+    // --- Scroll Reveal Animations ---
+    const observerOptions = {
+        root: null, // viewport
+        rootMargin: '0px',
+        threshold: 0.1 // Trigger when 10% of the item is visible
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+
+                // Specific animation triggers
+                if (entry.target.classList.contains('section-title')) {
+                    entry.target.classList.add('revealed');
+                }
+                if (entry.target === aboutSection) {
+                    aboutText.querySelectorAll('h2 span').forEach(span => span.classList.add('revealed'));
+                    aboutText.querySelectorAll('p').forEach(p => p.classList.add('revealed'));
+                    stats.forEach(stat => stat.classList.add('revealed'));
+                    aboutImage.classList.add('revealed');
+                }
+                // Stop observing once revealed
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+
+    // Observe all initially hidden elements
+    scrollRevealElements.forEach(el => {
+        observer.observe(el);
+    });
+
+    // Special handling for about section text/image reveals
+    observer.observe(aboutSection);
+
+    // Observe footer sections and bottom
+    footerSections.forEach(section => observer.observe(section));
+    observer.observe(footerBottom);
+
+
+    // --- Form Submission Handling ---
+    quoteForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // In a real application, you would send this data to a server
+        // using fetch() or XMLHttpRequest.
+        // For demonstration, we'll just simulate a successful submission.
+
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const service = document.getElementById('service').value;
+
+        // Basic validation
+        if (!name || !email) {
+            formMessage.textContent = 'Please fill in all required fields.';
+            formMessage.classList.remove('success');
+            formMessage.classList.add('error');
+            formMessage.style.opacity = 1;
+            return;
+        }
+
+        // Simulate API call
+        formMessage.textContent = 'Sending your request...';
+        formMessage.classList.remove('success', 'error');
+        formMessage.style.opacity = 1;
+
+        setTimeout(() => {
+            // Simulate success
+            formMessage.textContent = 'Thank you for your request! We will get back to you soon.';
+            formMessage.classList.add('success');
+            formMessage.classList.remove('error');
+            quoteForm.reset(); // Clear the form
+
+            // Hide message after a few seconds
+            setTimeout(() => {
+                formMessage.style.opacity = 0;
+            }, 5000);
+
+        }, 2000); // Simulate network delay
+    });
+});
+// Add to document.addEventListener('DOMConte.txt' inside the DOMContentLoaded function
+// but outside any existing specific function, e.g., after the scroll reveal logic.
+
+    // --- Custom Cursor Animation ---
+    const customCursor = document.querySelector('.custom-cursor');
+
+    if (customCursor) {
+        document.addEventListener('mousemove', (e) => {
+            customCursor.style.left = `${e.clientX}px`;
+            customCursor.style.top = `${e.clientY}px`;
+        });
+
+        document.addEventListener('mousedown', () => {
+            customCursor.classList.add('clicked');
+        });
+
+        document.addEventListener('mouseup', () => {
+            customCursor.classList.remove('clicked');
+        });
+
+        // Add hover effect for interactive elements
+        const interactiveElements = document.querySelectorAll('a, button, .service-card, .theme-toggle');
+        interactiveElements.forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                customCursor.style.width = '40px';
+                customCursor.style.height = '40px';
+                customCursor.style.borderColor = 'transparent';
+                customCursor.style.backgroundColor = 'rgba(0, 255, 65, 0.2)'; // Green glow
+                if (body.classList.contains('light-mode')) {
+                    customCursor.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'; // Dark glow
+                }
+            });
+
+            element.addEventListener('mouseleave', () => {
+                customCursor.style.width = '20px';
+                customCursor.style.height = '20px';
+                customCursor.style.borderColor = 'var(--dark-green)';
+                customCursor.style.backgroundColor = 'transparent';
+                if (body.classList.contains('light-mode')) {
+                    customCursor.style.borderColor = 'var(--primary-black)';
+                }
+            });
+        });
+    }
+    // Add to document.addEventListener('DOMConte.txt' inside the DOMContentLoaded function
+// You can place it after the Custom Cursor Animation section.
+
+    // --- Background Music Control ---
+    const backgroundMusic = document.getElementById('background-music');
+    const musicToggleButton = document.getElementById('music-toggle');
+    let isPlaying = false; // Track music state
+
+    if (backgroundMusic && musicToggleButton) {
+        // Try to play music on user interaction or immediately if allowed
+        // Note: Browsers often block autoplay without user interaction unless muted
+        // So, we'll try to play when the user interacts with *any* part of the page,
+        // or more reliably, when they click the music toggle button.
+
+        // Initial attempt to play (will likely be blocked by browsers if not muted)
+        // You could uncomment this if you initially set <audio autoplay muted> in HTML
+        // backgroundMusic.play().then(() => {
+        //     isPlaying = true;
+        //     backgroundMusic.muted = false; // Unmute if autoplay successful
+        //     musicToggleButton.querySelector('i').className = 'fas fa-volume-up';
+        // }).catch(error => {
+        //     console.log('Autoplay blocked:', error);
+        //     // Music will remain paused and muted, waiting for user interaction
+        //     isPlaying = false;
+        //     backgroundMusic.muted = true;
+        //     musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+        // });
+
+
+        musicToggleButton.addEventListener('click', () => {
+            if (isPlaying) {
+                backgroundMusic.pause();
+                backgroundMusic.muted = true; // Ensure it's muted when paused
+                musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+            } else {
+                // When user explicitly clicks play, try to play and unmute
+                backgroundMusic.muted = false; // Unmute first
+                backgroundMusic.play().then(() => {
+                    musicToggleButton.querySelector('i').className = 'fas fa-volume-up';
+                }).catch(error => {
+                    console.log('Playback failed after click:', error);
+                    // Fallback: If still blocked, mute it again and show muted icon
+                    backgroundMusic.muted = true;
+                    musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+                });
+            }
+            isPlaying = !isPlaying; // Toggle state
+        });
+
+        // Set initial icon based on whether it's playing (unlikely without interaction)
+        // or if it's paused/muted. By default, start with muted icon.
+        musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+
+        // Optional: If you want to try playing music once *any* user interaction occurs
+        // (e.g., a click anywhere on the document), you can add a listener like this.
+        // This is a common workaround for browser autoplay policies.
+        document.addEventListener('click', (e) => {
+            if (!isPlaying && backgroundMusic.paused && e.target !== musicToggleButton && !musicToggleButton.contains(e.target)) {
+                // Try to play if not already playing and click is not on the toggle button itself
+                backgroundMusic.muted = false; // Attempt to unmute
+                backgroundMusic.play().then(() => {
+                    isPlaying = true;
+                    musicToggleButton.querySelector('i').className = 'fas fa-volume-up';
+                }).catch(error => {
+                    // Autoplay still blocked, keep muted and paused
+                    backgroundMusic.muted = true;
+                    backgroundMusic.pause(); // Ensure it's paused
+                    musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+                    console.log('Background music autoplay blocked, awaiting explicit toggle:', error);
+                });
+            }
+        }, { once: true }); // Only run this listener once
+    }// In document.addEventListener('DOMConte.txt'
+
+document.addEventListener('DOMContentLoaded', function () {
+    // ... (existing code for cached DOM elements, background music, click sound) ...
+
+    // Store elements to be revealed in a mutable array, filtered as they are revealed
+    let scrollRevealElements = Array.from(document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right'));
+
+    // --- Scroll Reveal Animations ---
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1 // Element is revealed when 10% is visible
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // ADDED: Apply staggered delay for service cards
+                if (entry.target.classList.contains('service-card')) {
+                    // Get all service cards to determine the current card's index
+                    const serviceCards = document.querySelectorAll('.service-card');
+                    const index = Array.from(serviceCards).indexOf(entry.target);
+                    if (index !== -1) {
+                        // Apply a transition delay (e.g., 150ms per card)
+                        entry.target.style.transitionDelay = `${index * 0.15}s`; 
+                    }
+                }
+                
+                entry.target.classList.add('revealed');
+                // Remove from the list of elements to observe once revealed
+                scrollRevealElements = scrollRevealElements.filter(el => el !== entry.target);
+                observer.unobserve(entry.target); // Stop observing once revealed
+            }
+        });
+
+        // If all elements are revealed, disconnect the observer
+        if (scrollRevealElements.length === 0) {
+            observer.disconnect();
+        }
+    }, observerOptions);
+
+    scrollRevealElements.forEach(element => {
+        observer.observe(element);
+    });
+
+    // Initial check for elements already in view on load
+    scrollRevealElements.forEach(element => {
+        if (element.getBoundingClientRect().top < window.innerHeight) {
+            // ADDED: Apply staggered delay for service cards already in view on load
+            if (element.classList.contains('service-card')) {
+                const serviceCards = document.querySelectorAll('.service-card');
+                const index = Array.from(serviceCards).indexOf(element);
+                if (index !== -1) {
+                    element.style.transitionDelay = `${index * 0.15}s`;
+                }
+            }
+            element.classList.add('revealed');
+            observer.unobserve(element); // Stop observing if already revealed
+        }
+    });
+
+    // ... (rest of your JavaScript code) ...
+});
