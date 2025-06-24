@@ -197,75 +197,124 @@ document.addEventListener('DOMContentLoaded', function () {
 // You can place it after the Custom Cursor Animation section.
 
     // --- Background Music Control ---
+    document.addEventListener('DOMContentLoaded', () => {
     const backgroundMusic = document.getElementById('background-music');
     const musicToggleButton = document.getElementById('music-toggle');
-    let isPlaying = false; // Track music state
+    const customCursor = document.querySelector('.custom-cursor');
 
+    // --- Background Music Logic ---
     if (backgroundMusic && musicToggleButton) {
-        // Try to play music on user interaction or immediately if allowed
-        // Note: Browsers often block autoplay without user interaction unless muted
-        // So, we'll try to play when the user interacts with *any* part of the page,
-        // or more reliably, when they click the music toggle button.
+        // Initialize state based on HTML 'muted' attribute
+        let isPlaying = !backgroundMusic.muted && !backgroundMusic.paused;
 
-        // Initial attempt to play (will likely be blocked by browsers if not muted)
-        // You could uncomment this if you initially set <audio autoplay muted> in HTML
-        // backgroundMusic.play().then(() => {
-        //     isPlaying = true;
-        //     backgroundMusic.muted = false; // Unmute if autoplay successful
-        //     musicToggleButton.querySelector('i').className = 'fas fa-volume-up';
-        // }).catch(error => {
-        //     console.log('Autoplay blocked:', error);
-        //     // Music will remain paused and muted, waiting for user interaction
-        //     isPlaying = false;
-        //     backgroundMusic.muted = true;
-        //     musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
-        // });
+        // Function to update button icon
+        const updateMusicIcon = () => {
+            if (isPlaying) {
+                musicToggleButton.querySelector('i').className = 'fas fa-volume-up';
+            } else {
+                musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+            }
+        };
 
+        // Set initial icon immediately
+        updateMusicIcon();
 
+        // Handle explicit click on the music toggle button
         musicToggleButton.addEventListener('click', () => {
             if (isPlaying) {
                 backgroundMusic.pause();
-                backgroundMusic.muted = true; // Ensure it's muted when paused
-                musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+                backgroundMusic.muted = true; // Ensure muted when paused
             } else {
-                // When user explicitly clicks play, try to play and unmute
-                backgroundMusic.muted = false; // Unmute first
+                // If currently paused, unmute and try to play
+                backgroundMusic.muted = false;
                 backgroundMusic.play().then(() => {
-                    musicToggleButton.querySelector('i').className = 'fas fa-volume-up';
+                    // Successfully played
                 }).catch(error => {
-                    console.log('Playback failed after click:', error);
-                    // Fallback: If still blocked, mute it again and show muted icon
-                    backgroundMusic.muted = true;
-                    musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
+                    // Playback failed (e.g., still blocked by browser, or no user gesture)
+                    console.warn('Background music playback blocked on toggle click:', error);
+                    backgroundMusic.muted = true; // Re-mute if failed
+                    backgroundMusic.pause(); // Ensure paused
+                    isPlaying = false; // Stay in paused state
                 });
             }
             isPlaying = !isPlaying; // Toggle state
+            updateMusicIcon(); // Update icon
         });
 
-        // Set initial icon based on whether it's playing (unlikely without interaction)
-        // or if it's paused/muted. By default, start with muted icon.
-        musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
-
-        // Optional: If you want to try playing music once *any* user interaction occurs
-        // (e.g., a click anywhere on the document), you can add a listener like this.
-        // This is a common workaround for browser autoplay policies.
+        // Optional: Attempt to play music on *any* user interaction on the page
+        // This is a common workaround for browsers that block initial autoplay.
+        // It will only try to play once.
+        let hasInteracted = false;
         document.addEventListener('click', (e) => {
-            if (!isPlaying && backgroundMusic.paused && e.target !== musicToggleButton && !musicToggleButton.contains(e.target)) {
-                // Try to play if not already playing and click is not on the toggle button itself
-                backgroundMusic.muted = false; // Attempt to unmute
-                backgroundMusic.play().then(() => {
-                    isPlaying = true;
-                    musicToggleButton.querySelector('i').className = 'fas fa-volume-up';
-                }).catch(error => {
-                    // Autoplay still blocked, keep muted and paused
-                    backgroundMusic.muted = true;
-                    backgroundMusic.pause(); // Ensure it's paused
-                    musicToggleButton.querySelector('i').className = 'fas fa-volume-mute';
-                    console.log('Background music autoplay blocked, awaiting explicit toggle:', error);
-                });
+            // Only attempt if music is not already playing and we haven't tried this before
+            if (!isPlaying && backgroundMusic.paused && !hasInteracted) {
+                // Check if the click target is NOT the music toggle itself
+                // This prevents double-handling if the first click is on the toggle
+                if (e.target !== musicToggleButton && !musicToggleButton.contains(e.target)) {
+                    backgroundMusic.muted = false; // Attempt to unmute
+                    backgroundMusic.play().then(() => {
+                        isPlaying = true;
+                        updateMusicIcon();
+                        console.log('Background music started on first general user interaction.');
+                    }).catch(error => {
+                        console.warn('Background music autoplay blocked on general interaction:', error);
+                        backgroundMusic.muted = true; // Re-mute if failed
+                        backgroundMusic.pause(); // Ensure paused
+                        isPlaying = false; // Stay in paused state
+                        updateMusicIcon();
+                    });
+                    hasInteracted = true; // Mark that we've tried playing once
+                }
             }
-        }, { once: true }); // Only run this listener once
-    }// In document.addEventListener('DOMConte.txt'
+        }, { once: true }); // The 'once: true' option makes this event listener automatically remove itself after being invoked once.
+
+        // Listener for when music actually pauses (e.g., user switches tabs or manually pauses via browser controls)
+        backgroundMusic.addEventListener('pause', () => {
+            if (isPlaying) { // Only change state if it was considered playing by our script
+                isPlaying = false;
+                updateMusicIcon();
+            }
+        });
+
+        // Listener for when music actually plays
+        backgroundMusic.addEventListener('play', () => {
+            if (!isPlaying) { // Only change state if it was considered paused by our script
+                isPlaying = true;
+                updateMusicIcon();
+            }
+        });
+
+    } else {
+        console.warn('Background music audio element or toggle button not found.');
+    }
+
+    // --- Custom Cursor Logic ---
+    if (customCursor) {
+        document.addEventListener('mousemove', (e) => {
+            customCursor.style.left = `${e.clientX}px`;
+            customCursor.style.top = `${e.clientY}px`;
+        });
+
+        // Optional: Add a class to body when hovering over interactive elements
+        const interactiveElements = 'a, button, input, textarea, [role="button"], [tabindex="0"], .service-card'; // Add more selectors as needed
+
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.matches(interactiveElements) || e.target.closest(interactiveElements)) {
+                document.body.classList.add('hover-interactive');
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            if (!e.relatedTarget || !(e.relatedTarget.matches(interactiveElements) || e.relatedTarget.closest(interactiveElements))) {
+                // Only remove if the new target is not also an interactive element
+                document.body.classList.remove('hover-interactive');
+            }
+        });
+
+    } else {
+        console.warn('Custom cursor element not found.');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     // ... (existing code for cached DOM elements, background music, click sound) ...
@@ -329,3 +378,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ... (rest of your JavaScript code) ...
 });
+
